@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Secure Webpage</title>
+</head>
+
+
+<body>
+    <div class="sidebar">
+        <a class="active" href="#home">HOME</a>
+        <!-- <a href="#news">News</a> -->
+        <a onclick="document.getElementById('loginModal').style.display='block'">Login</a>
+        <a onclick="document.getElementById('registerModal').style.display='block'">Register</a>
+    </div>
+    <h2>Welcome! Register or login to start uploading files</h2>
+
+
+
+    <!-- The Login Modal -->
+    <div id="loginModal" class="modal">
+        <span onclick="document.getElementById('loginModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content ">
+
+            <div class="container">
+                <label for="uname"><b>Email</b></label>
+                <input type="text" placeholder="Enter email" name="uname" id="loginEmail" required>
+
+                <label for="psw"><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="loginPsw" id="loginPsw" required>
+
+                <button id="loginbtn" class="loginbtn">Login</button>
+
+                <div id="authenticatorForm" style="display: none" enctype="multipart/form-data">
+                    <img id="QRCodeImg" src="">
+                    <input id="6DigitCode" type='text' placeholder="Enter the 6 digit number" />
+                    <button id="checkbtn" class="checkbtn">Check</button>
+                </div>
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+                <button type="button" onclick="document.getElementById('loginModal').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+    <!-- The Register Modal -->
+    <div id="registerModal" class="modal">
+        <span onclick="document.getElementById('registerModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content animate">
+
+            <div class="container">
+                <label for="email"><b>Email</b></label>
+                <input type="text" placeholder="Enter Email" name="email" id="registerEmail" required>
+
+                <label for="psw"><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="psswd" id="registerPsw" required>
+
+                <label for="email"><b>Name</b></label>
+                <input type="text" placeholder="Enter Name" name="name" id="registerName" required>
+                </label>
+                <button id="registerbtn" class="registerbtn">Register</button>
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+                <button type="button" onclick="document.getElementById('registerModal').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+<script src="/index.js"></script>
+
+
+</html>

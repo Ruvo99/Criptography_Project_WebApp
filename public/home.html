@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Uploader</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+    <div class="topnav">
+        <a class="active">HOME</a>
+        <a id="edit-user" onclick="document.getElementById('editModal').style.display='block'"></a>
+        <a href="index.html">Logout</a>
+        <a id="loginsHistory" onclick="document.getElementById('loginsModal').style.display='block'">Last logins</a>
+    </div>
+    <h1>Upload the files you want to verify:</h1>
+    <form ref='uploadForm' id='uploadForm' action='https://localhost:3030/upload' method='post' encType="multipart/form-data">
+        <input type="file" name="sampleFile" />
+        <input type='submit' value='Upload file' />
+    </form>
+    <div id="fileTable">
+        <table>
+            <tr>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Modal for login history -->
+    <div id="loginsModal" class="modal">
+        <span onclick="document.getElementById('loginsModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content ">
+            <h3>Logins history:</h3>
+
+            <div id="loginTABLE">
+                <table>
+                    <tr>
+                        <th>User name</th>
+                        <th>Email</th>
+                        <th>Login date-time</th>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+                <button type="button" onclick="document.getElementById('loginsModal').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- The Register Modal -->
+    <div id="editModal" class="modal">
+        <span onclick="document.getElementById('editModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+
+        <!-- Modal Content -->
+        <form class="modal-content animate">
+
+            <div class="container">
+                <label for="email"><b>New email</b></label>
+                <input type="text" placeholder="Enter Email" name="email" id="newEmail" required>
+
+                <label for="psw"><b>New password</b></label>
+                <input type="password" placeholder="Enter Password" name="psswd" id="newPassword" required>
+
+                <label for="email"><b>New name</b></label>
+                <input type="text" placeholder="Enter Name" name="name" id="newName" required>
+                </label>
+                <button id="editbtn" class="editbtn">Save changes</button>
+            </div>
+
+            <div class="container" style="background-color:#f1f1f1">
+                <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="cancelbtn">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+<script src="/home.js"></script>
+
+</html>

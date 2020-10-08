@@ -40,6 +40,6 @@ mongoose.connect(process.env.URLDB, {
     }, app).listen(PORT, function() { //Run server
         console.log("My https server listening on port " + PORT + "...");
     });
-}).catch((err) => { //Fracaso en conexión
+}).catch((err) => { //Connection failure
     console.log("Not connected to database", err);
 });

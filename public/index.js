@@ -2,6 +2,7 @@
 let registerbtn = document.getElementById("registerbtn");
 let loginbtn = document.getElementById("loginbtn");
 let checkbtn = document.getElementById("checkbtn");
+let QRregisterIMG = document.getElementById("QRCodeImg");
 
 /* EVENT LISTENERS FOR SUBMIT BUTTONS */
 registerbtn.addEventListener("click", function(event) {
@@ -52,8 +53,10 @@ function register(datos) {
         if (xhr.status != 200) {
             alert('User with this mail already exists, try another one\n' + xhr.statusText);
         } else if (xhr.status == 200) {
-            alert('\n User registered successfuly');
-            window.location.href = "../index.html";
+            let res = JSON.parse(xhr.responseText);
+            alert('\n User registered successfuly. Please scan the QR Code with Google Authenticator app');
+            QRregisterIMG.setAttribute("style", "display: block");
+            QRregisterIMG.setAttribute("src", res.urlQR);
         }
     };
 
@@ -100,11 +103,9 @@ function login(datos) {
         } else if (xhr.status == 200) {
             let res = JSON.parse(xhr.responseText);
             localStorage.setItem("usuario", res.usuario.name);
-            localStorage.setItem("urlQR", res.urlQR);
-            localStorage.setItem("ascii", res.asciiSTR);
+            localStorage.setItem("ascii", res.usuario.secret);
             localStorage.setItem("email", res.usuario.email);
             document.getElementById("authenticatorForm").setAttribute("style", "display: block");
-            document.getElementById("QRCodeImg").setAttribute("src", localStorage.urlQR);
         }
     };
 }

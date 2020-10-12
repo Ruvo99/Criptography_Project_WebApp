@@ -24,6 +24,7 @@
         "mongoose-unique-validator": "^2.0.3",
         "path": "^0.12.7",
         "qrcode": "^1.4.4",
-        "speakeasy": "^2.0.0"
+        "speakeasy": "^2.0.0",
+        "zlib": "^1.0.5"
     }
 }

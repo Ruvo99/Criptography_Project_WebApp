@@ -9,6 +9,9 @@ const qrcode = require('qrcode');
 let jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const dateTime = require('date-time');
+const zlib = require('zlib');
+
+const AppendInitVect = require('./appendInitVect');
 
 //Require all models from /models
 const User = require('../models/user');
@@ -46,44 +49,35 @@ app.post('/login', function(req, res) {
                 }
             });
         }
-        //Once we assured the user exists, generate secret for 2FA
         //console.log(userDB);
-        let secret = speakeasy.generateSecret({
-            name: "Code for user of Upload System"
+        // Authentication token
+        let token = jwt.sign({
+            usuario: userDB,
+        }, process.env.SEED_AUTENTICACION, {
+            expiresIn: process.env.CADUCIDAD_TOKEN
+        });
+        res.json({
+            ok: true,
+            usuario: userDB,
+            token
         });
         //QR code generation for authentication
-        qrcode.toDataURL(secret.otpauth_url, function(err, data) {
-            if (err) {
-                throw err;
-            } else {
-                // Authentication token
-                let token = jwt.sign({
-                    usuario: userDB,
-                }, process.env.SEED_AUTENTICACION, {
-                    expiresIn: process.env.CADUCIDAD_TOKEN
-                });
-                // Save the secret's ascii for verification of 6 digit code
-                let AsciiSTR = "";
-                AsciiSTR = secret.ascii;
-                res.json({
-                    ok: true,
-                    usuario: userDB,
-                    urlQR: data,
-                    asciiSTR: AsciiSTR,
-                    token
-                });
-            }
-        });
+
     });
 });
 
 app.post('/register', function(req, res) {
     let body = req.body;
+    let str = "Code for user " + body.nombre + " on Upload System";
+    let secret = speakeasy.generateSecret({
+        name: str
+    });
     //Create new user
     let user = new User({
         email: body.email,
         name: body.nombre,
-        psw: bcrypt.hashSync(body.password, 10)
+        psw: bcrypt.hashSync(body.password, 10),
+        secret: secret.ascii
     });
     //Save user information on DB
     user.save((err, userDB) => {
@@ -93,9 +87,17 @@ app.post('/register', function(req, res) {
                 err,
             });
         }
-        res.json({
-            ok: true,
-            user: userDB
+        //Send qrcode to frontend
+        qrcode.toDataURL(secret.otpauth_url, function(err, data) {
+            if (err) {
+                throw err;
+            } else {
+                res.json({
+                    ok: true,
+                    user: userDB,
+                    urlQR: data
+                });
+            }
         });
     });
 });
@@ -220,6 +222,11 @@ app.get('/userLogins', function(req, res) {
 app.post('/edit', function(req, res) {
     //Save body from the response
     let body = req.body;
+    let str = "Code for user " + body.nName + " on Upload System";
+    //Generate new secret
+    let secret = speakeasy.generateSecret({
+        name: str
+    });
     //Find the user on the DB
     User.findOne({ email: body.actualEmail }, (errorFound, userDB) => {
         if (errorFound) {
@@ -241,19 +248,92 @@ app.post('/edit', function(req, res) {
                 $set: {
                     "email": body.nEmail,
                     "name": body.nName,
-                    "psw": bcrypt.hashSync(body.nPass, 10)
-
+                    "psw": bcrypt.hashSync(body.nPass, 10),
+                    "secret": secret.ascii
                 }
             }, function(err, rslt) { //Send all data to frontend
-                res.json({
-                    ok: true,
-                    email: body.nEmail,
-                    nombre: body.nName,
-                    contraseña: body.nPass
-                })
-            })
+                qrcode.toDataURL(secret.otpauth_url, function(err, data) {
+                    if (err) {
+                        throw err;
+                    } else {
+                        res.json({
+                            ok: true,
+                            urlQR: data
+                        });
+                    }
+                });
+            });
         }
     });
+});
+
+app.post('/encryption', function(req, res) {
+    // Generate a secure, pseudo random initialization vector.
+    const initVect = crypto.randomBytes(16);
+    // Generate a cipher key from the password.
+    const encryptionKey = fs.readFileSync('keys/encriptionKey.pem');
+    const readStream = fs.createReadStream('public/files/' + req.body.file);
+    const gzip = zlib.createGzip();
+    const cipher = crypto.createCipheriv('aes256', encryptionKey, initVect);
+    const appendInitVect = new AppendInitVect(initVect);
+    // Create a write stream with a different file extension.
+    const writeStream = fs.createWriteStream('public/files/' + req.body.file + '.enc');
+    readStream
+        .pipe(gzip)
+        .pipe(cipher)
+        .pipe(appendInitVect)
+        .pipe(writeStream);
+    fs.unlinkSync('public/files/' + req.body.file);
+    res.send("File Encrypted");
+});
+
+app.post('/decryption', function(req, res) {
+    const readInitVect = fs.createReadStream('public/files/' + req.body.file, { end: 15 });
+
+    // Wait to get the initVect.
+    let initVect;
+    readInitVect.on('data', (chunk) => {
+        initVect = chunk;
+    });
+    let errors = 0;
+    // Once we’ve got the initialization vector, we can decrypt the file.
+    readInitVect.on('close', () => {
+        const encryptionKey = fs.readFileSync('keys/encriptionKey.pem');
+        const readStream = fs.createReadStream('public/files/' + req.body.file, { start: 16 });
+        const decipher = crypto.createDecipheriv('aes256', encryptionKey, initVect);
+        const unzip = zlib.createUnzip();
+        const writeStream = fs.createWriteStream('public/files/' + req.body.file + '.unenc');
+
+
+        readStream
+            .pipe(decipher).on('error', err => {
+                console.log(err);
+                errors = 1;
+                console.log(errors);
+
+            })
+            .pipe(unzip).on('error', err => {
+                console.log(err);
+                errors = 2;
+                console.log(errors);
+
+            })
+            .pipe(writeStream).on('error', err => {
+                console.log(err);
+                errors = 3;
+                console.log(errors);
+            });
+        writeStream.on('open', function() {
+            var filename = 'public/files/' + req.body.file.replace(".enc", "").replace(".unenc", "");
+            fs.rename('public/files/' + req.body.file + '.unenc', filename, function(err) {
+                if (err) throw err;
+                console.log('Errors: ', errors);
+                fs.unlinkSync('public/files/' + req.body.file);
+                res.send("File Decrypted");
+            });
+        });
+    });
+
 });
 
 module.exports = app;

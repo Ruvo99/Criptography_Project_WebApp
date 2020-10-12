@@ -14,6 +14,10 @@ let userSchema = mongoose.Schema({
     psw: {
         type: String,
         required: true
+    },
+    secret: {
+        type: String,
+        required: true
     }
 });
 

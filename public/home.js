@@ -1,5 +1,6 @@
 let editTXT = document.getElementById("edit-user");
 let editBTN = document.getElementById("editbtn");
+let QRregisterIMG = document.getElementById("QRCodeImg");
 
 editTXT.text = "Edit " + localStorage.usuario;
 
@@ -27,6 +28,8 @@ function showfiles(data) {
         <th>Files</th>
         <th>QR Code(Advise: Press CTRL+Click to open on new window)</th>
         <th>Verify</th>
+        <th>Encrypt</th>
+        <th>Decrypt</th>
     </tr>
     {{files}}
     </table>`;
@@ -35,10 +38,13 @@ function showfiles(data) {
     <td>{{filename}}</td>
     <td><a href="/QR_Codes/QRCode_{{filename3}}.html">QR Code</a></td>
     <td><button onclick="verify('{{filename2}}')">Verify</button></td>
+    <td><button id="enc" onclick="encrypt('{{filename4}}')">Encrypt</button></td>
+    <td><button id="dec" onclick="decrypt('{{filename5}}')">Decrypt</button></td>
     <tr>`;
     let filesHTML = '';
+
     data.map(item => {
-        filesHTML += filesListItem.replace('{{filename}}', item).replace('{{filename2}}', item).replace('{{filename3}}', item);
+        filesHTML += filesListItem.replace('{{filename}}', item).replace('{{filename2}}', item).replace('{{filename3}}', item).replace('{{filename4}}', item).replace('{{filename5}}', item);
     });
     const tableHTML = filesList.replace('{{files}}', filesHTML);
     document.getElementById('fileTable').innerHTML = tableHTML;
@@ -66,6 +72,31 @@ function displayLogs(data) {
     document.getElementById("loginTABLE").innerHTML = loginsTableHTML;
 }
 
+function encrypt(fileToEncrypt) {
+    console.log(fileToEncrypt)
+    document.getElementById("enc").addEventListener("click", function(event) {
+        console.log('Hereeeee');
+        let obj = {
+            file: fileToEncrypt
+        }
+        console.log(obj);
+        encryption(obj);
+        event.preventDefault();
+    });
+}
+
+function decrypt(fileToDecrypt) {
+    console.log(fileToDecrypt);
+    document.getElementById("dec").addEventListener("click", function(event) {
+        let obj = {
+            file: fileToDecrypt
+        }
+        console.log(obj);
+        decryption(obj);
+        event.preventDefault();
+    });
+}
+
 /* HTTP REQUESTS FOR BACKEND */
 
 function edit(datos) {
@@ -82,8 +113,10 @@ function edit(datos) {
         if (xhr.status != 200) {
             alert('Something went wrong, try again\n' + xhr.statusText);
         } else if (xhr.status == 200) {
-            alert('\n User data saved successfuly, log in again to see changes');
-            window.location.href = "../index.html";
+            let res = JSON.parse(xhr.response);
+            alert('\n User data saved successfuly, scan the QR Code again and logout to see changes on your account');
+            QRregisterIMG.setAttribute("style", "display: block");
+            QRregisterIMG.setAttribute("src", res.urlQR);
         }
     }
 }
@@ -151,3 +184,43 @@ function logsDisplay() {
     }
 }
 logsDisplay();
+
+function encryption(data) {
+    // 1. Create XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+    // 2. Configure HTTP Operation
+    xhr.open('POST', `https://localhost:3030/encryption`);
+    // 3. Type of data 
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    // 4. Send request
+    xhr.send(JSON.stringify(data));
+    // 5. Once the server answers...
+    xhr.onload = function() {
+        if (xhr.status != 200) {
+            alert('\n ' + xhr.responseText);
+        } else if (xhr.status == 200) {
+            alert('\n ' + xhr.responseText);
+            window.location.href = "./home.html";
+        }
+    }
+}
+
+function decryption(data) {
+    // 1. Create XMLHttpRequest object
+    let xhr = new XMLHttpRequest();
+    // 2. Configure HTTP Operation
+    xhr.open('POST', `https://localhost:3030/decryption`);
+    // 3. Type of data 
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    // 4. Send request
+    xhr.send(JSON.stringify(data));
+    // 5. Once the server answers...
+    xhr.onload = function() {
+        if (xhr.status != 200) {
+            alert('\n ' + xhr.responseText);
+        } else if (xhr.status == 200) {
+            alert('\n ' + xhr.responseText);
+            window.location.href = "./home.html";
+        }
+    }
+}

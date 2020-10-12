@@ -72,30 +72,8 @@ function displayLogs(data) {
     document.getElementById("loginTABLE").innerHTML = loginsTableHTML;
 }
 
-function encrypt(fileToEncrypt) {
-    console.log(fileToEncrypt)
-    document.getElementById("enc").addEventListener("click", function(event) {
-        console.log('Hereeeee');
-        let obj = {
-            file: fileToEncrypt
-        }
-        console.log(obj);
-        encryption(obj);
-        event.preventDefault();
-    });
-}
 
-function decrypt(fileToDecrypt) {
-    console.log(fileToDecrypt);
-    document.getElementById("dec").addEventListener("click", function(event) {
-        let obj = {
-            file: fileToDecrypt
-        }
-        console.log(obj);
-        decryption(obj);
-        event.preventDefault();
-    });
-}
+
 
 /* HTTP REQUESTS FOR BACKEND */
 
@@ -185,7 +163,11 @@ function logsDisplay() {
 }
 logsDisplay();
 
-function encryption(data) {
+function encrypt(data) {
+    let obj = {
+        file: data
+    }
+
     // 1. Create XMLHttpRequest object
     let xhr = new XMLHttpRequest();
     // 2. Configure HTTP Operation
@@ -193,7 +175,7 @@ function encryption(data) {
     // 3. Type of data 
     xhr.setRequestHeader('Content-Type', 'application/json');
     // 4. Send request
-    xhr.send(JSON.stringify(data));
+    xhr.send(JSON.stringify(obj));
     // 5. Once the server answers...
     xhr.onload = function() {
         if (xhr.status != 200) {
@@ -205,7 +187,11 @@ function encryption(data) {
     }
 }
 
-function decryption(data) {
+function decrypt(data) {
+    let obj = {
+        file: data
+    }
+
     // 1. Create XMLHttpRequest object
     let xhr = new XMLHttpRequest();
     // 2. Configure HTTP Operation
@@ -213,7 +199,7 @@ function decryption(data) {
     // 3. Type of data 
     xhr.setRequestHeader('Content-Type', 'application/json');
     // 4. Send request
-    xhr.send(JSON.stringify(data));
+    xhr.send(JSON.stringify(obj));
     // 5. Once the server answers...
     xhr.onload = function() {
         if (xhr.status != 200) {

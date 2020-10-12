@@ -268,6 +268,8 @@ app.post('/edit', function(req, res) {
 });
 
 app.post('/encryption', function(req, res) {
+    console.log(req.body);
+
     // Generate a secure, pseudo random initialization vector.
     const initVect = crypto.randomBytes(16);
     // Generate a cipher key from the password.
